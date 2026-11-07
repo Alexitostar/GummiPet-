@@ -5,28 +5,38 @@
   const hearts = document.getElementById('heartsContainer');
 
   const SIZE = 1000, ACTOR_W = 226, SPEED = 3.2;
-  const music = new Audio('song.mp3');
+  
+  // Rutas relativas explícitas para evitar errores en GitHub Pages
+  const music = new Audio('./song.mp3');
   music.loop = true;
   music.preload = 'auto';
   music.volume = 0.75;
-  const eatSound = new Audio('comer.mp3');
+  
+  const eatSound = new Audio('./comer.mp3');
   eatSound.preload = 'auto';
 
   const state = { x: 387, direction: 1, target: null, eating: false, lastTime: 0, pauseUntil: 0 };
   let audioStarted = false;
 
   function startMusic() {
-    if (!music.paused) return;
-    // Browsers require a real user gesture before allowing audio playback.
-    // This function is called directly from the first touch/click.
-    const attempt = music.play();
-    if (attempt && typeof attempt.then === 'function') {
-      attempt.then(() => { audioStarted = true; })
-             .catch(() => { audioStarted = false; });
-    } else {
+    if (audioStarted && !music.paused) return;
+    
+    music.play().then(() => {
       audioStarted = true;
-    }
+      // Una vez que suena, quitamos los detectores globales de arranque
+      ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
+        window.removeEventListener(evt, startMusic);
+      });
+    }).catch((err) => {
+      console.warn('Esperando interacción válida para reproducir song.mp3:', err);
+      audioStarted = false;
+    });
   }
+
+  // Escuchar en toda la ventana con eventos estándar que desbloquean audio en Chrome y Safari
+  ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
+    window.addEventListener(evt, startMusic, { passive: true });
+  });
 
   function placeCookie(event) {
     startMusic();
@@ -45,22 +55,22 @@
     state.target = { x: x + 25, element: cookie };
   }
 
-  // Double-click (mouse) and double-tap (touch) on Gummigoo:
-  // pause briefly, then resume the same movement automatically.
   let lastActorTap = 0;
   function pauseBriefly() {
     state.pauseUntil = performance.now() + 2000;
-    actor.src = 'gummigoo.png';
+    actor.src = './gummigoo.png';
   }
 
   actor.addEventListener('dblclick', (event) => {
     event.preventDefault();
     event.stopPropagation();
+    startMusic();
     pauseBriefly();
   });
 
   actor.addEventListener('pointerdown', (event) => {
     event.stopPropagation();
+    startMusic(); // Asegura que tocar a Gummigoo también active la música
     const now = performance.now();
     if (now - lastActorTap < 350) {
       pauseBriefly();
@@ -71,6 +81,7 @@
   }, { passive: true });
 
   stage.addEventListener('pointerdown', placeCookie, { passive: true });
+  
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && audioStarted && music.paused) {
       music.play().catch(() => { audioStarted = false; });
@@ -93,7 +104,7 @@
   function face(direction) {
     if (state.direction !== direction) {
       state.direction = direction;
-      actor.src = direction > 0 ? 'gummigoo.gif' : 'gummigoo_izquierda.gif';
+      actor.src = direction > 0 ? './gummigoo.gif' : './gummigoo_izquierda.gif';
     }
   }
 
@@ -107,7 +118,7 @@
       return;
     } else if (state.pauseUntil !== 0) {
       state.pauseUntil = 0;
-      actor.src = state.direction > 0 ? 'gummigoo.gif' : 'gummigoo_izquierda.gif';
+      actor.src = state.direction > 0 ? './gummigoo.gif' : './gummigoo_izquierda.gif';
     }
 
     if (state.target && !state.eating) {
@@ -116,15 +127,13 @@
       if (Math.abs(distance) <= SPEED * dt + 2) {
         state.x = Math.max(0, Math.min(SIZE - ACTOR_W, state.target.x - ACTOR_W / 2));
         state.eating = true;
-        actor.src = 'gummigoo.png';
+        actor.src = './gummigoo.png';
         state.target.element.remove();
         state.target = null;
         eatSound.currentTime = 0;
         eatSound.play().catch(() => {});
         showHearts();
 
-        // After eating, restart the game scene without restarting the music.
-        // Keep the existing Audio element and its playback position untouched.
         setTimeout(() => {
           state.x = 387;
           state.direction = 1;
@@ -132,7 +141,7 @@
           state.eating = false;
           state.pauseUntil = 0;
           cookies.replaceChildren();
-          actor.src = 'gummigoo.gif';
+          actor.src = './gummigoo.gif';
           actor.style.left = `${state.x}px`;
         }, 1400);
       } else {
@@ -154,11 +163,11 @@
     requestAnimationFrame(update);
   }
 
-  // Attempt to request portrait orientation where the browser permits it.
   try {
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(() => {});
     }
   } catch (_) {}
+  
   requestAnimationFrame(update);
 })();
