@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Animaciones Gummigoo</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#111;overflow:hidden}
+main{min-height:100vh;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;padding:24px;position:relative}
+img{width:226px;height:361px;object-fit:contain;z-index:2}
+.cloud{position:fixed;width:230px;height:100px;opacity:.7;animation:drift var(--speed) linear infinite;left:-250px}
+.cloud i{position:absolute;border-radius:50%;display:block}
+.cloud i:nth-child(1){width:70px;height:70px;left:5px;top:25px;background:#ffb7d5}
+.cloud i:nth-child(2){width:90px;height:90px;left:48px;top:4px;background:#ffe0b8}
+.cloud i:nth-child(3){width:75px;height:75px;left:110px;top:22px;background:#c9e9dc}
+.cloud i:nth-child(4){width:55px;height:55px;left:155px;top:39px;background:#d8c9f2}
+.c1{top:12%;--speed:29s}.c2{top:34%;--speed:37s;animation-delay:-13s;transform:scale(.8)}.c3{top:70%;--speed:33s;animation-delay:-21s;transform:scale(1.1)}
+@keyframes drift{to{left:110%}}
+</style></head>
+<body><div class="cloud c1"><i></i><i></i><i></i><i></i></div><div class="cloud c2"><i></i><i></i><i></i><i></i></div><div class="cloud c3"><i></i><i></i><i></i><i></i></div>
+<main><img src="gummigoo.gif" width="226" height="361" alt=""><img src="gummigoo_izquierda.gif" width="226" height="361" alt=""></main></body></html>
